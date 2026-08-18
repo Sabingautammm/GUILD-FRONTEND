@@ -264,7 +264,7 @@ export default function FFLiveData({ region, uid }) {
     weaponSkins.some((w) => w.icon) ||
     (titleItem && titleItem.icon) ||
     (frameItem && frameItem.icon);
-// fgfgdfgfgd
+
   return (
     <section className="card-surface p-6 space-y-5 animate-fade-up">
       <div className="flex items-center justify-between gap-3">
