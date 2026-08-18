@@ -1,0 +1,65 @@
+# GUILD FrontEnd — CI pipeline (validate only; deploy = Vercel auto on main)
+# Gates: install -> lint (oxlint) -> guard VITE_API_URL -> production build (vite + PWA).
+# Conventions: see D:\Coding\GUILD\.project-memory\CI_CONVENTIONS.md (byte-identical
+# trigger/concurrency/permissions/checkout/setup-node blocks across all 3 repos).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Install, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Checkout (pinned to actions/checkout@v4.4.0 — commit SHA + tag comment)
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # Node 22 (LTS, satisfies the ^20.19 || >=22.12 dependency floor) with npm cache
+      - name: Set up Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      # Reproducible install from the committed v3 lockfile
+      - name: Install dependencies (npm ci)
+        timeout-minutes: 5
+        run: npm ci
+
+      # Lint gate: oxlint — errors fail the job; the 4 pre-existing warnings are tolerated
+      - name: Lint
+        run: npm run lint
+
+      # VITE_API_URL is baked into the bundle at build time, so it is REQUIRED.
+      # Fail loudly (::error:: + exit 1) instead of shipping a broken API URL.
+      - name: Guard required secret VITE_API_URL
+        id: guard-env
+        shell: bash
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::VITE_API_URL repository secret is not set. Add it under Settings > Secrets > Actions (repo or org level)."
+            exit 1
+          fi
+
+      # Production build (vite + PWA). VITE_GOOGLE_CLIENT_ID is optional (empty allowed).
+      - name: Build (vite + PWA)
+        timeout-minutes: 5
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || '' }}
+        run: npm run build

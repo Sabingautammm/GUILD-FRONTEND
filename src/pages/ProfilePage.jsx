@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiTrash2,
   FiUsers, FiArrowRight, FiCamera, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle, FiAlertCircle,
-  FiWifi, FiWifiOff, FiCheck,
+  FiWifi, FiWifiOff, FiCheck, FiSmartphone, FiMonitor,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -21,6 +21,78 @@ const ACCEPT_AVATAR = "image/jpeg,image/png,image/webp";
 const AVATAR_MIMES = ["image/jpeg", "image/png", "image/webp"];
 const AVATAR_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2 MB
+
+// Platform detection and download URLs
+const APK_DOWNLOAD_URL = import.meta.env.VITE_APK_DOWNLOAD_URL || "https://github.com/Sabingautammm/GUILD/releases/latest/download/app-release.apk";
+const WINDOWS_DOWNLOAD_URL = import.meta.env.VITE_WINDOWS_DOWNLOAD_URL || "https://github.com/Sabingautammm/GUILD/releases/latest/download/GUILD_1.0.0_x64-setup.exe";
+
+function usePlatform() {
+  const [platform, setPlatform] = useState("unknown");
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /android|iphone|ipad|ipod|mobile/.test(ua);
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isAndroid = /android/.test(ua);
+    const isWindows = /windows/.test(ua);
+    const isMac = /macintosh|mac os x/.test(ua);
+    const isLinux = /linux/.test(ua);
+    
+    if (isMobile) {
+      if (isAndroid) setPlatform("android");
+      else if (isIOS) setPlatform("ios");
+      else setPlatform("mobile");
+    } else if (isWindows) {
+      setPlatform("windows");
+    } else if (isMac) {
+      setPlatform("mac");
+    } else if (isLinux) {
+      setPlatform("linux");
+    } else {
+      setPlatform("desktop");
+    }
+  }, []);
+  return platform;
+}
+
+function DownloadAppButtons() {
+  const platform = usePlatform();
+  
+  if (platform === "android") {
+    return (
+      <a
+        href={APK_DOWNLOAD_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg gold-gradient-bg px-5 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 transition-all shadow-[0_4px_14px_-4px_rgba(227,160,18,0.5)] animate-fade-up"
+      >
+        <FiSmartphone className="w-4 h-4" />
+        Download APK
+      </a>
+    );
+  }
+  
+  if (platform === "ios") {
+    return (
+      <div className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg border border-guild-600 px-5 py-2.5 text-sm font-semibold text-guild-300 animate-fade-up opacity-70">
+        <FiSmartphone className="w-4 h-4" />
+        <span>iOS: Open in Safari & tap Share → Add to Home Screen</span>
+      </div>
+    );
+  }
+  
+  // Windows, Mac, Linux, desktop
+  return (
+    <a
+      href={WINDOWS_DOWNLOAD_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg gold-gradient-bg px-5 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 transition-all shadow-[0_4px_14px_-4px_rgba(227,160,18,0.5)] animate-fade-up"
+    >
+      <FiMonitor className="w-4 h-4" />
+      Download for Windows
+    </a>
+  );
+}
 
 function validateAvatarFile(file) {
   if (!file) return { ok: false, message: "Please select an image." };
@@ -486,7 +558,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <DownloadAppButtons />
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-semibold text-guild-300 hover:bg-guild-800 hover:text-red-300 transition-colors"

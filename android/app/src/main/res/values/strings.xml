@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GUILD</string>
+    <string name="title_activity_main">GUILD</string>
+    <string name="package_name">com.guild.app</string>
+    <string name="custom_url_scheme">com.guild.app</string>
+</resources>
