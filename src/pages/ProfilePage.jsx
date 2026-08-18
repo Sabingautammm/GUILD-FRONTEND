@@ -61,6 +61,7 @@ function DownloadAppButtons() {
     return (
       <a
         href={APK_DOWNLOAD_URL}
+        download="GUILD-app-release.apk"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg gold-gradient-bg px-5 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 transition-all shadow-[0_4px_14px_-4px_rgba(227,160,18,0.5)] animate-fade-up"
@@ -84,6 +85,7 @@ function DownloadAppButtons() {
   return (
     <a
       href={WINDOWS_DOWNLOAD_URL}
+      download="GUILD_1.0.0_x64-setup.exe"
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg gold-gradient-bg px-5 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 transition-all shadow-[0_4px_14px_-4px_rgba(227,160,18,0.5)] animate-fade-up"
