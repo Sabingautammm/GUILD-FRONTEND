@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiTrash2,
   FiUsers, FiArrowRight, FiCamera, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle, FiAlertCircle,
-  FiWifi, FiWifiOff, FiCheck,
+  FiWifi, FiWifiOff, FiCheck, FiZap,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -481,6 +481,15 @@ export default function ProfilePage() {
               {user?.game && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-guild-800 px-3 py-1 text-[11px] font-bold text-guild-200 ring-1 ring-guild-600">
                   <FiHash className="text-xs" /> {user.game}{user?.gameUid ? ` &middot; ${user.gameUid}` : ""}
+                </span>
+              )}
+              {player?.primeLevel > 0 && (
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-[11px] font-bold text-purple-300 ring-1 ring-purple-500/40"
+                  title={`Garena Prime · ${player.primePoints} lifetime points`}
+                >
+                  <FiZap className="text-xs" /> Prime Lv {player.primeLevel}
+                  {Number(player.primePoints) > 0 ? ` · ${Number(player.primePoints).toLocaleString()} pts` : ""}
                 </span>
               )}
             </div>
