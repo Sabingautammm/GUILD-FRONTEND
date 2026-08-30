@@ -1,8 +1,8 @@
 export const TOAST_DURATIONS = {
   info: 4000,
   success: 4000,
-  warning: 7000,
-  error: Infinity,
+  warning: 4000,
+  error: 4000,
   loading: Infinity,
 };
 

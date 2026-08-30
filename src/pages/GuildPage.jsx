@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiShield, FiUsers, FiAlertCircle, FiArrowRight, FiEdit3, FiCheck, FiX } from "react-icons/fi";
+import { FiShield, FiUsers, FiAlertCircle, FiArrowRight, FiEdit3, FiCheck, FiX, FiImage, FiFilm } from "react-icons/fi";
 import { getGuildProfile, getPrivateGuildView, updateGuild, applyToGuild, leaveGuild, disbandGuild } from "../services/api/guildApi";
+import { getGallery } from "../services/api/mediaApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { playerName } from "../utils/playerName";
 import { SkeletonProfile, SkeletonGuild } from "../components/ui/Skeleton";
+import MediaCard from "../components/ui/MediaCard";
 
 export default function GuildPage() {
   const { guildUid } = useParams();
@@ -26,6 +28,10 @@ export default function GuildPage() {
   const [historyDraft, setHistoryDraft] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [guildMedia, setGuildMedia] = useState([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaError, setMediaError] = useState(null);
+
   const amMember = membership && membership.guildUid === guildUid;
 
   useEffect(() => {
@@ -41,6 +47,24 @@ export default function GuildPage() {
       cancelled = true;
     };
   }, [guildUid, amMember]);
+
+  // Load guild media when gallery tab is active
+  useEffect(() => {
+    if (activeTab !== "gallery") return;
+    
+    let cancelled = false;
+    setMediaLoading(true);
+    setMediaError(null);
+    
+    getGallery({ guildUid })
+      .then((media) => !cancelled && setGuildMedia(Array.isArray(media) ? media : []))
+      .catch((err) => !cancelled && setMediaError(err instanceof ApiError ? err.message : "Could not load guild media."))
+      .finally(() => !cancelled && setMediaLoading(false));
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [guildUid, activeTab]);
 
   const handleApply = async () => {
     if (!isAuthenticated) return navigate("/login");
@@ -212,6 +236,7 @@ export default function GuildPage() {
           { key: "players", label: "Guild Players" },
           { key: "introduction", label: "Introduction" },
           { key: "history", label: "History" },
+          { key: "gallery", label: "Gallery" },
         ].map((t) => (
           <button
             key={t.key}
@@ -268,6 +293,36 @@ export default function GuildPage() {
             )}
           </section>
         </>
+      )}
+
+      {activeTab === "gallery" && (
+        <section className="card-surface p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Guild Media</h2>
+            <span className="text-xs text-guild-500">
+              {mediaLoading ? "Loading..." : `${guildMedia.length} items`}
+            </span>
+          </div>
+
+          {mediaError ? (
+            <div className="py-8 text-center">
+              <FiAlertCircle className="mx-auto text-2xl text-gold-400" />
+              <p className="mt-2 text-xs text-cream">{mediaError}</p>
+            </div>
+          ) : guildMedia.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-xs text-guild-500">
+                {amMember ? "This guild hasn't uploaded any media yet." : "This guild's media is private."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {guildMedia.map((media) => (
+                <MediaCard key={media._id} media={media} onChanged={() => setRefreshKey(k => k + 1)} />
+              ))}
+            </div>
+          )}
+        </section>
       )}
 
       {activeTab === "introduction" && (
