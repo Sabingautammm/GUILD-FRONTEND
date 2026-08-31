@@ -3,7 +3,6 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { GoHome, GoHomeFill } from "react-icons/go";
 import { PiTrophy, PiTrophyFill, PiFilmReel, PiFilmReelFill } from "react-icons/pi";
 import { HiOutlineUserGroup, HiUserGroup } from "react-icons/hi2";
-import { MdOutlinePhotoLibrary, MdPhotoLibrary } from "react-icons/md";
 import { FiLogIn, FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
@@ -19,7 +18,6 @@ const navItems = [
   { label: "Leader Board", path: "/leaderboard", icon: PiTrophy, activeIcon: PiTrophyFill },
   { label: "Reel", path: "/reel", icon: PiFilmReel, activeIcon: PiFilmReelFill },
   { label: "Guild", path: "/guild", icon: HiOutlineUserGroup, activeIcon: HiUserGroup },
-  { label: "Gallery", path: "/gallery", icon: MdOutlinePhotoLibrary, activeIcon: MdPhotoLibrary },
 ];
 
 function useUnreadCount() {
