@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp, FiZap } from "react-icons/fi";
+import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp, FiZap, FiUsers } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
-import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
+import { getPlayerProfile, getPlayerRank, getGuildInfo } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -85,6 +85,7 @@ export default function EnterUidRegionPage() {
   // backend's mock fallback (name "Player<uid>", "head_001" avatar) — so that
   // a real profile is never accidentally persisted into the dashboard.
   const [liveCheck, setLiveCheck] = useState(null); // { status, rank, profile }
+  const [guildInfo, setGuildInfo] = useState(null); // { status: "loading"|"loaded"|"error", data }
 
   if (!isAuthenticated) {
     return (
@@ -236,10 +237,24 @@ export default function EnterUidRegionPage() {
       // fetchedData with the authoritative live nickname/avatar/level before
       // the user can click "Continue". The toast UI never blocks on this.
       crossCheckLive(combinedData);
+      
+      if (combinedData.clanBasicInfo?.clanId) {
+        loadGuildPreview(combinedData.region, combinedData.clanBasicInfo.clanId);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to fetch data. Please try again.");
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  const loadGuildPreview = async (region, clanId) => {
+    setGuildInfo({ status: "loading" });
+    try {
+      const info = await getGuildInfo(region, clanId);
+      setGuildInfo({ status: "loaded", data: info?.data ?? null });
+    } catch {
+      setGuildInfo({ status: "error" });
     }
   };
 
@@ -304,7 +319,11 @@ export default function EnterUidRegionPage() {
     setIsBusy(true);
     setError("");
     try {
-      await toast.promise(completeOnboarding(fetchedData), {
+      const payload = { ...fetchedData };
+      if (fetchedData.clanBasicInfo?.clanId) {
+        payload.guildUid = fetchedData.clanBasicInfo.clanId;
+      }
+      await toast.promise(completeOnboarding(payload), {
         loading: "Completing setup…",
         success: "Setup complete! Redirecting to dashboard…",
         error: (e) => (e instanceof ApiError ? e.message : "Could not complete setup."),
@@ -432,6 +451,60 @@ export default function EnterUidRegionPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Guild Preview — from in-game clan if user is in a Free Fire guild */}
+              {fetchedData.clanBasicInfo && (
+                <div className="rounded-xl border border-gold-500/40 bg-guild-900 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400">Free Fire Guild</p>
+                  {guildInfo?.status === "loading" && (
+                    <p className="mt-2 text-xs text-guild-400 flex items-center gap-1">
+                      <FiLoader className="animate-spin" /> Fetching guild data…
+                    </p>
+                  )}
+                  {guildInfo?.status === "error" && (
+                    <p className="mt-2 text-xs text-guild-500">
+                      Could not load live guild data. Guild will be linked with basic info only.
+                    </p>
+                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl gold-gradient-bg text-xl font-bold text-guild-950 gold-glow">
+                      {fetchedData.clanBasicInfo.clanName?.charAt(0).toUpperCase() || "G"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-display text-cream truncate">
+                        {guildInfo?.data?.guildname || fetchedData.clanBasicInfo.clanName || "Free Fire Guild"}
+                      </p>
+                      <p className="text-[11px] font-mono text-guild-500">Guild UID {fetchedData.clanBasicInfo.clanId}</p>
+                    </div>
+                    <span className="rounded-full bg-gold-500/10 px-3 py-1 text-[10px] font-bold text-gold-300 ring-1 ring-gold-500/30">
+                      Lv {guildInfo?.data?.guildlevel ?? fetchedData.clanBasicInfo.clanLevel ?? "—"}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-lg bg-guild-800/50 px-2 py-1.5">
+                      <p className="text-[9px] uppercase tracking-wide text-guild-400">Members</p>
+                      <p className="text-sm font-bold text-cream">
+                        {guildInfo?.data?.membernum ?? fetchedData.clanBasicInfo.memberNum ?? "—"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-guild-800/50 px-2 py-1.5">
+                      <p className="text-[9px] uppercase tracking-wide text-guild-400">Capacity</p>
+                      <p className="text-sm font-bold text-cream">
+                        {guildInfo?.data?.capacity ?? 55}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-guild-800/50 px-2 py-1.5">
+                      <p className="text-[9px] uppercase tracking-wide text-guild-400">Your Role</p>
+                      <p className="text-sm font-bold text-cream">
+                        {String(fetchedData.clanBasicInfo.captainId) === String(fetchedData.uid) ? "Leader" : "Member"}
+                      </p>
+                    </div>
+                  </div>
+                  {guildInfo?.data?.slogan && (
+                    <p className="mt-2 text-[11px] text-guild-400 italic">"{guildInfo.data.slogan}"</p>
+                  )}
+                </div>
+              )}
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-3">

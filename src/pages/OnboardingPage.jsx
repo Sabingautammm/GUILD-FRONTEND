@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
-import { FiLoader, FiHash, FiCheck, FiHeart, FiTrendingUp, FiZap } from "react-icons/fi";
+import { FiLoader, FiHash, FiCheck, FiHeart, FiTrendingUp, FiZap, FiUsers } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
-import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
+import { getPlayerProfile, getPlayerRank, getGuildInfo } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -128,6 +128,7 @@ export default function OnboardingPage() {
   }, [fetchedData?.avatarUrl]);
   // Live FF preview: { status: "loading" | "loaded" | "error", profile, rank }
   const [ffPreview, setFfPreview] = useState(null);
+  const [guildInfo, setGuildInfo] = useState(null); // { status: "loading" | "loaded" | "error", data }
 
   if (!isAuthenticated) {
     return (
@@ -274,6 +275,9 @@ export default function OnboardingPage() {
       toast.success("Data fetched successfully! Click confirm to complete onboarding.");
       // Non-blocking live Free Fire preview — never blocks (or breaks) onboarding.
       loadFfPreview(uid.trim(), region);
+      if (combinedData.clanBasicInfo?.clanId) {
+        loadGuildPreview(combinedData.region, combinedData.clanBasicInfo.clanId);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to fetch data. Please try again.");
     } finally {
@@ -302,12 +306,26 @@ export default function OnboardingPage() {
     }
   };
 
+  const loadGuildPreview = async (region, clanId) => {
+    setGuildInfo({ status: "loading" });
+    try {
+      const info = await getGuildInfo(region, clanId);
+      setGuildInfo({ status: "loaded", data: info?.data ?? null });
+    } catch {
+      setGuildInfo({ status: "error" });
+    }
+  };
+
   const handleCompleteOnboarding = async () => {
     if (!fetchedData) return;
     setIsBusy(true);
     setError("");
     try {
-      await toast.promise(completeOnboarding(fetchedData), {
+      const payload = { ...fetchedData };
+      if (fetchedData.clanBasicInfo?.clanId) {
+        payload.guildUid = fetchedData.clanBasicInfo.clanId;
+      }
+      await toast.promise(completeOnboarding(payload), {
         loading: "Completing onboarding…",
         success: "Onboarding complete! Redirecting…",
         error: (e) => (e instanceof ApiError ? e.message : "Could not complete onboarding."),
@@ -406,6 +424,56 @@ export default function OnboardingPage() {
                   <p className="font-bold text-cream">{fetchedData.stats?.csNormal?.matches || 0}</p>
                 </div>
               </div>
+              {fetchedData.clanBasicInfo && (
+                <div className="rounded-lg border border-gold-500/40 bg-guild-900 p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FiUsers className="text-gold-400 text-xs" />
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-gold-400">Free Fire Guild</p>
+                  </div>
+                  {guildInfo?.status === "loading" && (
+                    <p className="text-xs text-guild-400 flex items-center gap-1">
+                      <FiLoader className="animate-spin" /> Fetching guild data…
+                    </p>
+                  )}
+                  {guildInfo?.status === "error" && (
+                    <p className="text-xs text-guild-500">
+                      Could not load live guild data.
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg gold-gradient-bg text-base font-bold text-guild-950">
+                      {fetchedData.clanBasicInfo.clanName?.charAt(0).toUpperCase() || "G"}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-display text-cream truncate">
+                        {guildInfo?.data?.guildname || fetchedData.clanBasicInfo.clanName || "Free Fire Guild"}
+                      </p>
+                      <p className="text-[11px] font-mono text-guild-500">UID {fetchedData.clanBasicInfo.clanId}</p>
+                    </div>
+                    <span className="text-[11px] font-bold text-gold-300">
+                      Lv {guildInfo?.data?.guildlevel ?? fetchedData.clanBasicInfo.clanLevel ?? "—"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-1.5 rounded-md bg-guild-800/50">
+                      <p className="text-[9px] text-guild-400">Members</p>
+                      <p className="text-xs font-bold text-cream">
+                        {guildInfo?.data?.membernum ?? fetchedData.clanBasicInfo.memberNum ?? "—"}
+                      </p>
+                    </div>
+                    <div className="p-1.5 rounded-md bg-guild-800/50">
+                      <p className="text-[9px] text-guild-400">Capacity</p>
+                      <p className="text-xs font-bold text-cream">{guildInfo?.data?.capacity ?? 55}</p>
+                    </div>
+                    <div className="p-1.5 rounded-md bg-guild-800/50">
+                      <p className="text-[9px] text-guild-400">Role</p>
+                      <p className="text-xs font-bold text-cream">
+                        {String(fetchedData.clanBasicInfo.captainId) === String(fetchedData.uid) ? "Leader" : "Member"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               {ffPreview && <FfPreviewBox preview={ffPreview} fallback={fetchedData} />}
               <div className="flex gap-3 pt-2">
                 <button
