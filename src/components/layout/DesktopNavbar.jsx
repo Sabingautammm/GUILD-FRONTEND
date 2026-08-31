@@ -176,8 +176,8 @@ export default function DesktopNavbar() {
                     Profile
                   </NavLink>
                   {!membership && (
-                    <NavLink to="/onboarding" className="block px-4 py-2 text-sm text-cream hover:bg-guild-800">
-                      Join / Create Guild
+                    <NavLink to="/guild" className="block px-4 py-2 text-sm text-cream hover:bg-guild-800">
+                      Browse Guilds
                     </NavLink>
                   )}
                   {isAdmin && (

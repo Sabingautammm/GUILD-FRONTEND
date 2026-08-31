@@ -539,19 +539,13 @@ export default function ProfilePage() {
         ) : (
           <div className="rounded-xl border border-dashed border-gold-500/40 bg-guild-900 p-5 space-y-3">
             <p className="text-sm font-bold text-cream">Not in a Guild</p>
-            <p className="text-xs text-guild-400">Join an existing guild or create your own to become its Leader.</p>
+            <p className="text-xs text-guild-400">Browse and join an existing guild.</p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => navigate("/guild")}
                 className="inline-flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110"
               >
-                <FiUsers className="text-xs" /> Join Guild
-              </button>
-              <button
-                onClick={() => navigate("/onboarding")}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-200 hover:bg-guild-800"
-              >
-                <FiPlusCircle className="text-xs" /> Create Guild
+                <FiUsers className="text-xs" /> Browse Guilds
               </button>
             </div>
           </div>
@@ -619,10 +613,10 @@ export default function ProfilePage() {
 
       {isFree && (
         <button
-          onClick={() => navigate("/onboarding")}
+          onClick={() => navigate("/guild")}
           className="flex items-center justify-center gap-2 w-full rounded-2xl border-2 border-dashed border-gold-500/40 bg-gold-500/5 p-5 text-sm font-bold text-gold-300 hover:bg-gold-500/10 transition-colors animate-fade-up"
         >
-          <FiPlusCircle className="text-lg" /> You're a free player &mdash; Create Guild or Apply to join one
+          <FiUsers className="text-lg" /> You're a free player &mdash; Browse and apply to join a guild
         </button>
       )}
 
