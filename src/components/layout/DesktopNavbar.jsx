@@ -5,7 +5,7 @@ import { PiTrophy, PiTrophyFill, PiFilmReel, PiFilmReelFill } from "react-icons/
 import { HiOutlineUserGroup, HiUserGroup } from "react-icons/hi2";
 import { FiLogIn, FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
-import { getUnreadCount } from "../../services/api/notificationApi";
+import { useUnreadNotifications } from "../../features/notifications/hooks/useUnreadNotifications";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
 import { playerName } from "../../utils/playerName";
 import Avatar from "../ui/Avatar";
@@ -20,31 +20,6 @@ const navItems = [
   { label: "Guild", path: "/guild", icon: HiOutlineUserGroup, activeIcon: HiUserGroup },
 ];
 
-function useUnreadCount() {
-  const { isAuthenticated } = useAuth();
-  const [unread, setUnread] = useState(0);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setUnread(0);
-      return;
-    }
-    let cancelled = false;
-    const load = () =>
-      getUnreadCount()
-        .then((d) => !cancelled && setUnread(d.unread ?? 0))
-        .catch(() => {});
-    load();
-    const id = setInterval(load, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [isAuthenticated]);
-
-  return unread;
-}
-
 export default function DesktopNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,7 +29,7 @@ export default function DesktopNavbar() {
   const itemRefs = useRef({});
   const [indicator, setIndicator] = useState({ left: 0, width: 0, opacity: 0 });
   const [dropdown, setDropdown] = useState(false);
-  const unread = useUnreadCount();
+  const unread = useUnreadNotifications(isAuthenticated);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);

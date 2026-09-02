@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { GoHome, GoHomeFill } from "react-icons/go";
 import { PiTrophy, PiTrophyFill, PiFilmReel, PiFilmReelFill } from "react-icons/pi";
@@ -6,7 +5,7 @@ import { HiOutlineUserGroup, HiUserGroup } from "react-icons/hi2";
 import { FaRegUserCircle, FaUserCircle } from "react-icons/fa";
 import { FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
-import { getUnreadCount } from "../../services/api/notificationApi";
+import { useUnreadNotifications } from "../../features/notifications/hooks/useUnreadNotifications";
 
 const navItems = [
   { label: "Home", path: "/", icon: GoHome, activeIcon: GoHomeFill },
@@ -17,21 +16,7 @@ const navItems = [
 
 export default function BottomNavbar() {
   const { isAuthenticated } = useAuth();
-  const [unread, setUnread] = useState(0);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setUnread(0);
-      return;
-    }
-    let cancelled = false;
-    getUnreadCount()
-      .then((d) => !cancelled && setUnread(d.unread ?? 0))
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated]);
+  const unread = useUnreadNotifications(isAuthenticated);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around bg-guild-950/95 backdrop-blur-xl border-t border-guild-700 px-2 lg:hidden">

@@ -5,7 +5,7 @@ import MediaCard from "../components/ui/MediaCard";
 import { getGallery, uploadMediaFile, getMyMedia, resubmitMedia } from "../services/api/mediaApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { ApiError } from "../services/api/client";
-import { SkeletonMediaGrid } from "../components/ui/Skeleton";
+import { SkeletonMediaGrid, SkeletonList } from "../components/ui/Skeleton";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 
@@ -387,8 +387,11 @@ export default function GalleryPage({ reelOnly = false }) {
               </div>
             )}
             {rejectedLoading && (
-              <div className="flex items-center gap-2 text-[11px] text-guild-500">
-                <FiLoader className="animate-spin" /> Checking your uploads…
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[11px] text-guild-500">
+                  <FiLoader className="animate-spin" /> Checking your uploads…
+                </div>
+                <SkeletonList count={3} />
               </div>
             )}
 

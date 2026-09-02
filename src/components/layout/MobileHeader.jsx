@@ -1,8 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { FiBell } from "react-icons/fi";
-import { useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
-import { getUnreadCount } from "../../services/api/notificationApi";
+import { useUnreadNotifications } from "../../features/notifications/hooks/useUnreadNotifications";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
 import { playerName } from "../../utils/playerName";
 import Avatar from "../ui/Avatar";
@@ -12,21 +11,7 @@ const logo = "/Logo-removebg-preview.png";
 export default function MobileHeader() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const [unread, setUnread] = useState(0);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setUnread(0);
-      return;
-    }
-    let cancelled = false;
-    getUnreadCount()
-      .then((d) => !cancelled && setUnread(d.unread ?? 0))
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated]);
+  const unread = useUnreadNotifications(isAuthenticated);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-guild-950/90 backdrop-blur-xl border-b border-guild-700">

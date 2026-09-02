@@ -8,7 +8,7 @@ import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { playerName } from "../utils/playerName";
-import { SkeletonProfile, SkeletonGuild } from "../components/ui/Skeleton";
+import { SkeletonProfile, SkeletonGuild, SkeletonMediaGrid } from "../components/ui/Skeleton";
 import MediaCard from "../components/ui/MediaCard";
 
 export default function GuildPage() {
@@ -309,6 +309,8 @@ export default function GuildPage() {
               <FiAlertCircle className="mx-auto text-2xl text-gold-400" />
               <p className="mt-2 text-xs text-cream">{mediaError}</p>
             </div>
+          ) : mediaLoading ? (
+            <SkeletonMediaGrid count={6} />
           ) : guildMedia.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-xs text-guild-500">

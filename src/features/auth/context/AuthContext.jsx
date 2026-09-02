@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getCurrentUser, logout as logoutApi, googleLogin as googleLoginApi } from "../services/authApi";
 
 const AuthContext = createContext(null);
@@ -85,23 +85,28 @@ export function AuthProvider({ children }) {
   const isAdmin = ["leader", "acting_leader", "officer"].includes(role);
   const needsOnboarding = isAuthenticated && onboarding?.needsOnboarding && !membership;
 
-  const value = {
-    user,
-    membership,
-    guild,
-    role,
-    isAdmin,
-    isAuthenticated,
-    isLoading,
-    onboarding,
-    error,
-    refresh,
-    loginWithGoogle,
-    logout,
-    updateOnboarding,
-    setUserData,
-    needsOnboarding,
-  };
+  // Memoize the context value so consumers don't re-render on every parent
+  // render unless one of the actual fields they read has changed.
+  const value = useMemo(
+    () => ({
+      user,
+      membership,
+      guild,
+      role,
+      isAdmin,
+      isAuthenticated,
+      isLoading,
+      onboarding,
+      error,
+      refresh,
+      loginWithGoogle,
+      logout,
+      updateOnboarding,
+      setUserData,
+      needsOnboarding,
+    }),
+    [user, membership, guild, role, isAdmin, isAuthenticated, isLoading, onboarding, error, refresh, loginWithGoogle, logout, updateOnboarding, setUserData, needsOnboarding]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

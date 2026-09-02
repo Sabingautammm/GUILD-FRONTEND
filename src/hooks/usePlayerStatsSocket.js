@@ -94,16 +94,16 @@ export function usePlayerStatsSocket(playerId, enabled = true) {
     }
   }, [playerId]);
 
+  // Single consolidated effect: connect when enabled+authenticated+playerId exist,
+  // disconnect otherwise. Avoids race between two separate effects.
   useEffect(() => {
-    connect();
-    return () => disconnect();
-  }, [connect, disconnect]);
-
-  useEffect(() => {
-    if (!enabled || !isAuthenticated) {
+    if (enabled && isAuthenticated && playerId) {
+      connect();
+    } else {
       disconnect();
     }
-  }, [enabled, isAuthenticated, disconnect]);
+    return () => disconnect();
+  }, [enabled, isAuthenticated, playerId, connect, disconnect]);
 
   return { stats, isConnected, error, reconnect: connect };
 }

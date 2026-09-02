@@ -6,49 +6,7 @@ import { getPlayerProfile, getPlayerRank, getGuildInfo } from "../services/api/f
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
-
-// Best-effort asset URL from the public ff-resources CDN. Numeric FF ids are
-// NOT hosted there (verified) — the <img> onError hook falls back to initials.
-function ffAssetUrl(id, size = "300x300") {
-  const s = String(id ?? "");
-  return s ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/${size}/${s}.png` : "";
-}
-
-function StepHeader({ step, total, title, description }) {
-  return (
-    <div className="mb-6">
-      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-400">
-        Step {step} of {total}
-      </p>
-      <h2 className="mt-1 text-xl font-display text-cream">{title}</h2>
-      {description && <p className="mt-1 text-sm text-guild-400">{description}</p>}
-    </div>
-  );
-}
-
-function ErrorBox({ message }) {
-  if (!message) return null;
-  return <p className="mt-2 text-xs text-red-400">{message}</p>;
-}
-
-const REGIONS = [
-  { code: "IND", label: "India" },
-  { code: "BR", label: "Brazil" },
-  { code: "US", label: "United States" },
-  { code: "SAC", label: "South America" },
-  { code: "NA", label: "North America" },
-  { code: "SG", label: "Singapore" },
-  { code: "BD", label: "Bangladesh" },
-  { code: "VN", label: "Vietnam" },
-  { code: "TH", label: "Thailand" },
-  { code: "ID", label: "Indonesia" },
-  { code: "RU", label: "Russia" },
-  { code: "TW", label: "Taiwan" },
-  { code: "ME", label: "Middle East" },
-  { code: "PK", label: "Pakistan" },
-  { code: "CIS", label: "CIS" },
-  { code: "EUROPE", label: "Europe" },
-];
+import { StepHeader, ErrorBox, REGIONS, ffAssetUrl } from "../features/onboarding/components/onboardingHelpers";
 
 function StatCard({ icon, label, value, color = "text-gold-300" }) {
   return (
