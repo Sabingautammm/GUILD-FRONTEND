@@ -66,14 +66,6 @@ export function completeOnboarding(ffData) {
   });
 }
 
-// Legacy leader login (if needed)
-export function leaderLogin(guildUid, password) {
-  return apiFetch("/auth/admin-login", {
-    method: "POST",
-    body: { guildUid, password },
-  });
-}
-
 // Account management
 export function changePassword(currentPassword, newPassword) {
   return apiFetch("/auth/change-password", {

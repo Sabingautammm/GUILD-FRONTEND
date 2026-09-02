@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { FiLoader } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { googleLogin } from "../services/authApi";
 import { ApiError } from "../../../services/api/client";
 import { useToast } from "../../../components/toast/ToastProvider";
@@ -37,6 +37,7 @@ function isMobileDevice() {
 
 export default function SocialLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const { refresh } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +59,9 @@ export default function SocialLogin() {
           error: (err) => (err instanceof ApiError ? err.message : "Google sign-in failed."),
         });
         await refresh();
-        navigate("/");
+        // Restore the protected route the user was originally headed to.
+        const from = location.state?.from ?? "/";
+        navigate(from, { replace: true });
       } catch {
         // toast already surfaced the error
       } finally {
@@ -66,7 +69,7 @@ export default function SocialLogin() {
         setIsSubmitting(false);
       }
     },
-    [navigate, refresh, toast]
+    [navigate, location, refresh, toast]
   );
 
   // Keep the GSI callback pointing at the latest handler without re-init.

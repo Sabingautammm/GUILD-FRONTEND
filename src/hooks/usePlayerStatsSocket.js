@@ -16,10 +16,15 @@ export function usePlayerStatsSocket(playerId, enabled = true) {
       return;
     }
 
+    // Backend sets 'access_token=' cookie; fallback to legacy 'token=' for compatibility
     const token = document.cookie
       .split('; ')
-      .find(row => row.startsWith('token='))
-      ?.split('=')[1];
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1]
+      ?? document.cookie
+        .split('; ')
+        .find(row => row.startsWith('token='))
+        ?.split('=')[1];
 
     if (!token) {
       setError('No auth token found');
@@ -76,10 +81,16 @@ export function usePlayerStatsSocket(playerId, enabled = true) {
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
+      // Emit unsubscribe BEFORE disconnecting to avoid race condition
       socketRef.current.emit('unsubscribe:player-stats', { playerId });
-      socketRef.current.disconnect();
-      socketRef.current = null;
-      setIsConnected(false);
+      // Give the emit a moment to send before closing the connection
+      setTimeout(() => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
+          setIsConnected(false);
+        }
+      }, 50);
     }
   }, [playerId]);
 

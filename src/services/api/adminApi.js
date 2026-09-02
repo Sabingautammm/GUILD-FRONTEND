@@ -1,5 +1,13 @@
 import { apiFetch } from "./client";
 
+// Lookup membership ID within the current guild by userId.
+// Uses the local roster/ex-member data the caller should already have fetched.
+export function resolveMembershipId(members, targetUserId) {
+  if (!members || !Array.isArray(members)) return null;
+  const found = members.find((m) => m.userId?._id === targetUserId);
+  return found ? found._id : null;
+}
+
 export function getRoster() {
   return apiFetch("/admin/members");
 }
@@ -8,24 +16,36 @@ export function getExMembers() {
   return apiFetch("/admin/members/ex");
 }
 
-export function promoteMember(targetUserId, newRole) {
+export function promoteMember(targetUserId, newRole, memberRows) {
+  const membershipId = resolveMembershipId(memberRows, targetUserId);
+  if (!membershipId) {
+    return Promise.reject(new Error("Could not find membership record for this player."));
+  }
   return apiFetch("/admin/members/promote", {
     method: "POST",
-    body: { targetUserId, newRole },
+    body: { membershipId, newRole },
   });
 }
 
-export function processMemberAction(actionType, targetUserId) {
+export function processMemberAction(actionType, targetUserId, memberRows) {
+  const membershipId = resolveMembershipId(memberRows, targetUserId);
+  if (!membershipId) {
+    return Promise.reject(new Error("Could not find membership record for this player."));
+  }
   return apiFetch("/admin/members/action", {
     method: "POST",
-    body: { actionType, targetUserId },
+    body: { action: actionType, membershipId, reason: undefined },
   });
 }
 
-export function deleteExMember(targetUserId) {
+export function deleteExMember(targetUserId, exMembers) {
+  const membershipId = resolveMembershipId(exMembers, targetUserId);
+  if (!membershipId) {
+    return Promise.reject(new Error("Could not find ex-member record for this player."));
+  }
   return apiFetch("/admin/members/ex/delete", {
     method: "POST",
-    body: { targetUserId },
+    body: { memberId: membershipId },
   });
 }
 

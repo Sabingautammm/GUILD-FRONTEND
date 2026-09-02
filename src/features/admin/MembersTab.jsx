@@ -105,7 +105,7 @@ export default function MembersTab() {
                       <button
                         disabled={busyId === m.userId?._id}
                         onClick={() =>
-                          run(processMemberAction("approve_join", m.userId._id), {
+                          run(processMemberAction("approve", m.userId._id, rows), {
                             loading: "Approving…",
                             success: role === "officer" ? "Submitted to Officer vote" : "Member approved",
                           })
@@ -117,12 +117,12 @@ export default function MembersTab() {
                       <button
                         disabled={busyId === m.userId?._id}
                         onClick={() =>
-                          run(processMemberAction("reject_join", m.userId._id), {
+                          run(processMemberAction("reject", m.userId._id, rows), {
                             loading: "Rejecting…",
                             success: role === "officer" ? "Submitted to Officer vote" : "Application rejected",
                           })
                         }
-                        className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-600 disabled:opacity-50"
+                        className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-600 disabled:opacity-50"
                       >
                         Reject
                       </button>
@@ -161,8 +161,8 @@ export default function MembersTab() {
                             askConfirm({
                               title: "Promote to Officer?",
                               message: `${playerName(m.userId, "This player")} will become an Officer and get moderation powers.`,
-                              actionLabel: "Promote",
-                              fn: promoteMember(m.userId._id, "officer"),
+                               actionLabel: "Promote",
+                              fn: () => promoteMember(m.userId._id, "officer", rows),
                               opts: { loading: "Promoting…", success: "Promoted to Officer" },
                             })
                           }
@@ -178,8 +178,8 @@ export default function MembersTab() {
                             askConfirm({
                               title: "Demote to Member?",
                               message: `${playerName(m.userId, "This player")} will lose Officer moderation powers and become a regular Member.`,
-                              actionLabel: "Demote",
-                              fn: promoteMember(m.userId._id, "member"),
+                               actionLabel: "Demote",
+                              fn: () => promoteMember(m.userId._id, "member", rows),
                               opts: { loading: "Demoting…", success: "Demoted to Member" },
                             })
                           }
@@ -195,9 +195,9 @@ export default function MembersTab() {
                             askConfirm({
                               title: "Demote Acting Leader?",
                               message: `${playerName(m.userId, "This player")} will be demoted to Member and lose leadership powers.`,
-                              actionLabel: "Demote",
+                               actionLabel: "Demote",
                               danger: true,
-                              fn: promoteMember(m.userId._id, "member"),
+                              fn: () => promoteMember(m.userId._id, "member", rows),
                               opts: { loading: "Demoting…", success: "Acting Leader demoted" },
                             })
                           }
@@ -213,8 +213,8 @@ export default function MembersTab() {
                             askConfirm({
                               title: "Make Acting Leader?",
                               message: `${playerName(m.userId, "This player")} will become Acting Leader with leadership powers (a previous Acting Leader, if any, will be demoted to Member).`,
-                              actionLabel: "Make Acting Leader",
-                              fn: promoteMember(m.userId._id, "acting_leader"),
+                               actionLabel: "Make Acting Leader",
+                              fn: () => promoteMember(m.userId._id, "acting_leader", rows),
                               opts: { loading: "Assigning…", success: "Acting Leader assigned" },
                             })
                           }
@@ -230,9 +230,9 @@ export default function MembersTab() {
                             askConfirm({
                               title: "Kick player?",
                               message: `${playerName(m.userId, "This player")} will be removed from the guild. They can re-apply later.`,
-                              actionLabel: "Kick",
+                               actionLabel: "Kick",
                               danger: true,
-                              fn: processMemberAction("kick", m.userId._id),
+                              fn: () => processMemberAction("kick", m.userId._id, rows),
                               opts: {
                                 loading: role === "officer" ? "Submitting to officer vote…" : "Removing…",
                                 success: role === "officer" ? "Submitted to officer vote" : "Member removed",
@@ -267,7 +267,7 @@ export default function MembersTab() {
                       <button
                         disabled={busyId === m.userId?._id}
                         onClick={() =>
-                          run(deleteExMember(m.userId._id), {
+                          run(deleteExMember(m.userId._id, exMembers), {
                             loading: "Deleting data…",
                             success: "Ex-member data permanently deleted",
                           })

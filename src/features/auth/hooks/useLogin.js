@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "../services/authApi";
+import { googleLogin } from "../services/authApi";
 import { ApiError } from "../../../services/api/client";
 import { useToast } from "../../../components/toast/ToastProvider";
 import { useAuth } from "../context/AuthContext";
@@ -35,7 +35,7 @@ export function useLogin(onSuccess) {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await toast.promise(login({ guildUid: values.guildUid.trim(), password: values.password }), {
+      await toast.promise(googleLogin({ guildUid: values.guildUid.trim(), password: values.password }), {
         loading: "Signing in…",
         loadingDescription: "Verifying credentials",
         success: "Signed in",

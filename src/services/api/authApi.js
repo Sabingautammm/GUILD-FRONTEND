@@ -7,13 +7,6 @@ export function googleLogin(idToken) {
   });
 }
 
-export function leaderLogin(guildUid, password) {
-  return apiFetch("/auth/admin-login", {
-    method: "POST",
-    body: { guildUid, password },
-  });
-}
-
 export function checkGuildUid(guildUid) {
   return apiFetch("/auth/onboarding/guild-uid", {
     method: "POST",

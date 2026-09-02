@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { FiLoader, FiHash, FiCheck, FiHeart, FiTrendingUp, FiZap, FiUsers } from "react-icons/fi";
+import { FiLoader, FiHash, FiCheck, FiHeart, FiStar, FiTrendingUp, FiZap, FiUsers } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
 import { getPlayerProfile, getPlayerRank, getGuildInfo } from "../services/api/ffApi";

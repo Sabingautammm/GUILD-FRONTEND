@@ -43,18 +43,15 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = useCallback(async (idToken) => {
     setError(null);
     try {
-      const data = await googleLoginApi(idToken);
-      setUser(data.user);
-      setMembership(data.membership);
-      setGuild(data.guild);
-      setOnboarding(data.onboarding || {});
-      setIsAuthenticated(true);
-      return { success: true, onboarding: data.onboarding };
+      await googleLoginApi(idToken);
+      // Refresh to fetch full user/membership/guild data since googleAuth response is partial
+      await refresh();
+      return { success: true };
     } catch (err) {
       setError(err.message || "Google sign-in failed");
       return { success: false, error: err.message };
     }
-  }, []);
+  }, [refresh]);
 
   const logout = useCallback(async () => {
     try {

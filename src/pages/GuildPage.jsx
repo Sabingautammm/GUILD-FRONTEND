@@ -318,7 +318,7 @@ export default function GuildPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {guildMedia.map((media) => (
-                <MediaCard key={media._id} media={media} onChanged={() => setRefreshKey(k => k + 1)} />
+                <MediaCard key={media._id} media={media} />
               ))}
             </div>
           )}
